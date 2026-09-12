@@ -474,6 +474,12 @@ namespace CodeImp.DoomBuilder.Windows
                 // Show open map dialog?
                 if (showdialog)
                 {
+                    if (General.SaveThenExit)
+                    {
+                        General.WriteLogLine("SAVETHENEXIT requires -CFG and -MAP so the open-map dialog can be skipped.");
+                        Environment.Exit(2);
+                        return;
+                    }
                     // Show open dialog
                     General.OpenMapFile(General.AutoLoadFile, options);
                 }
@@ -481,6 +487,22 @@ namespace CodeImp.DoomBuilder.Windows
                 {
                     // Open with options
                     General.OpenMapFileWithOptions(General.AutoLoadFile, options);
+                    if (General.SaveThenExit)
+                    {
+                        if (General.Map == null)
+                        {
+                            General.WriteLogLine("SAVETHENEXIT: map failed to open.");
+                            Environment.Exit(3);
+                            return;
+                        }
+                        // Skip nodebuilder dialogs; we only need Doom64MapSetIO + CARCOSA rewrite.
+                        General.Map.ConfigSettings.NodebuilderSave = "";
+                        General.Map.ConfigSettings.NodebuilderTest = "";
+                        General.Map.IsChanged = true;
+                        bool ok = General.SaveMap();
+                        General.WriteLogLine(ok ? "SAVETHENEXIT: saved." : "SAVETHENEXIT: save failed.");
+                        Environment.Exit(ok ? 0 : 1);
+                    }
                 }
             }
         }

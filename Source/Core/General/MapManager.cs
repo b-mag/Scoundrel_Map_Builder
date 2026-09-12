@@ -418,6 +418,13 @@ namespace CodeImp.DoomBuilder
 #endif
             map.EndAddRemove();
 
+            // Carcosa sidecar extras (fog / weather / thing metadata)
+            try { CarcosaLumpIO.ReadFrom(tempwad, TEMP_MAP_HEADER, map, config.MapLumpNames); }
+            catch (Exception e)
+            {
+                General.WriteLogLine("CARCOSA lump skipped: " + e.Message);
+            }
+
             // Load data manager
             // villsa - load resources before loading map
             // texture hash table needs to be initialized first
@@ -550,6 +557,11 @@ namespace CodeImp.DoomBuilder
            int index = tempwad.FindLumpIndex(TEMP_MAP_HEADER);
            if (index == -1) index = 0;
            io.Write(outputset, TEMP_MAP_HEADER, index);
+           try { CarcosaLumpIO.WriteTo(tempwad, TEMP_MAP_HEADER, outputset, config.MapLumpNames); }
+           catch (Exception e)
+           {
+               General.WriteLogLine("CARCOSA lump write skipped: " + e.Message);
+           }
            outputset.Dispose();
 
            General.MainWindow.DisplayStatus(oldstatus);

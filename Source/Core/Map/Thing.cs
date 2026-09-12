@@ -67,6 +67,17 @@ namespace CodeImp.DoomBuilder.Map
         private bool fixedsize;
         private float iconoffset;   // Arrow or dot coordinate offset on the texture
 
+        // Carcosa sidecar thing extras (CARCOSA lump)
+        private int carcosaArchetypeId;
+        private int carcosaInitialState;
+        private int carcosaFlags;
+        private int carcosaDialogue;
+        private float carcosaPatrolX0;
+        private float carcosaPatrolY0;
+        private float carcosaPatrolX1;
+        private float carcosaPatrolY1;
+        private int carcosaQuestFlag;
+
         #endregion
 
         #region ================== Properties
@@ -85,6 +96,38 @@ namespace CodeImp.DoomBuilder.Map
         public bool FixedSize { get { return fixedsize; } }
         public int Tag { get { return tag; } set { BeforePropsChange(); tag = value; if ((tag < General.Map.FormatInterface.MinTag) || (tag > General.Map.FormatInterface.MaxTag)) throw new ArgumentOutOfRangeException("Tag", "Invalid tag number"); } }
         public Sector Sector { get { return sector; } }
+
+        public int CarcosaArchetypeId { get { return carcosaArchetypeId; } set { BeforePropsChange(); carcosaArchetypeId = value; } }
+        public int CarcosaInitialState { get { return carcosaInitialState; } set { BeforePropsChange(); carcosaInitialState = value; } }
+        public int CarcosaFlags { get { return carcosaFlags; } set { BeforePropsChange(); carcosaFlags = value; } }
+        public int CarcosaDialogue { get { return carcosaDialogue; } set { BeforePropsChange(); carcosaDialogue = value; } }
+        public float CarcosaPatrolX0 { get { return carcosaPatrolX0; } set { BeforePropsChange(); carcosaPatrolX0 = value; } }
+        public float CarcosaPatrolY0 { get { return carcosaPatrolY0; } set { BeforePropsChange(); carcosaPatrolY0 = value; } }
+        public float CarcosaPatrolX1 { get { return carcosaPatrolX1; } set { BeforePropsChange(); carcosaPatrolX1 = value; } }
+        public float CarcosaPatrolY1 { get { return carcosaPatrolY1; } set { BeforePropsChange(); carcosaPatrolY1 = value; } }
+        public int CarcosaQuestFlag { get { return carcosaQuestFlag; } set { BeforePropsChange(); carcosaQuestFlag = value; } }
+
+        public bool HasCarcosaExtra()
+        {
+            return (carcosaArchetypeId != 0) || (carcosaInitialState != 0) || (carcosaFlags != 0) ||
+                (carcosaDialogue != 0) || (carcosaQuestFlag != 0) ||
+                (carcosaPatrolX0 != 0f) || (carcosaPatrolY0 != 0f) ||
+                (carcosaPatrolX1 != 0f) || (carcosaPatrolY1 != 0f);
+        }
+
+        internal void ApplyCarcosaFromLump(int archetype, int initialState, int flags, int dialogue,
+            float px0, float py0, float px1, float py1, int quest)
+        {
+            carcosaArchetypeId = archetype;
+            carcosaInitialState = initialState;
+            carcosaFlags = flags;
+            carcosaDialogue = dialogue;
+            carcosaPatrolX0 = px0;
+            carcosaPatrolY0 = py0;
+            carcosaPatrolX1 = px1;
+            carcosaPatrolY1 = py1;
+            carcosaQuestFlag = quest;
+        }
 
         #endregion
 
@@ -183,6 +226,16 @@ namespace CodeImp.DoomBuilder.Map
 
             if (!s.IsWriting)
                 anglerad = Angle2D.DoomToReal(angledoom);
+
+            s.rwInt(ref carcosaArchetypeId);
+            s.rwInt(ref carcosaInitialState);
+            s.rwInt(ref carcosaFlags);
+            s.rwInt(ref carcosaDialogue);
+            s.rwFloat(ref carcosaPatrolX0);
+            s.rwFloat(ref carcosaPatrolY0);
+            s.rwFloat(ref carcosaPatrolX1);
+            s.rwFloat(ref carcosaPatrolY1);
+            s.rwInt(ref carcosaQuestFlag);
         }
 
         // This copies all properties to another thing
@@ -203,6 +256,15 @@ namespace CodeImp.DoomBuilder.Map
             t.color = color;
             t.iconoffset = iconoffset;
             t.fixedsize = fixedsize;
+            t.carcosaArchetypeId = carcosaArchetypeId;
+            t.carcosaInitialState = carcosaInitialState;
+            t.carcosaFlags = carcosaFlags;
+            t.carcosaDialogue = carcosaDialogue;
+            t.carcosaPatrolX0 = carcosaPatrolX0;
+            t.carcosaPatrolY0 = carcosaPatrolY0;
+            t.carcosaPatrolX1 = carcosaPatrolX1;
+            t.carcosaPatrolY1 = carcosaPatrolY1;
+            t.carcosaQuestFlag = carcosaQuestFlag;
             base.CopyPropertiesTo(t);
         }
 

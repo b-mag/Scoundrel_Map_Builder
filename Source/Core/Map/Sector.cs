@@ -72,6 +72,21 @@ namespace CodeImp.DoomBuilder.Map
         private uint hashfloortexname;  // villsa
         private uint hashceilingtexname;    // villsa
 
+        // Carcosa sidecar (CARCOSA lump — not part of the 24-byte SECTORS struct)
+        private int carcosaWeather;
+        private int carcosaMood;
+        private float carcosaFogDensity;
+        private float carcosaFogStart;
+        private float carcosaFogMax;
+        private int carcosaFogR = 128;
+        private int carcosaFogG = 128;
+        private int carcosaFogB = 128;
+        private int carcosaAmbient;
+        private float carcosaEmissive;
+        private bool carcosaOutdoors = true;
+        private bool carcosaFacadeOnly;
+        private string carcosaPlaceName = "";
+
         // Cloning
         private Sector clone;
         private int serializedindex;
@@ -118,6 +133,49 @@ namespace CodeImp.DoomBuilder.Map
         public FlatVertex[] FlatVertices { get { return flatvertices; } }
         public ReadOnlyCollection<LabelPositionInfo> Labels { get { return labels; } }
         internal Dictionary<string, bool> Flags { get { return flags; } } // villsa
+
+        public int CarcosaWeather { get { return carcosaWeather; } set { BeforePropsChange(); carcosaWeather = value; } }
+        public int CarcosaMood { get { return carcosaMood; } set { BeforePropsChange(); carcosaMood = value; } }
+        public float CarcosaFogDensity { get { return carcosaFogDensity; } set { BeforePropsChange(); carcosaFogDensity = value; } }
+        public float CarcosaFogStart { get { return carcosaFogStart; } set { BeforePropsChange(); carcosaFogStart = value; } }
+        public float CarcosaFogMax { get { return carcosaFogMax; } set { BeforePropsChange(); carcosaFogMax = value; } }
+        public int CarcosaFogR { get { return carcosaFogR; } set { BeforePropsChange(); carcosaFogR = value; } }
+        public int CarcosaFogG { get { return carcosaFogG; } set { BeforePropsChange(); carcosaFogG = value; } }
+        public int CarcosaFogB { get { return carcosaFogB; } set { BeforePropsChange(); carcosaFogB = value; } }
+        public int CarcosaAmbient { get { return carcosaAmbient; } set { BeforePropsChange(); carcosaAmbient = value; } }
+        public float CarcosaEmissive { get { return carcosaEmissive; } set { BeforePropsChange(); carcosaEmissive = value; } }
+        public bool CarcosaOutdoors { get { return carcosaOutdoors; } set { BeforePropsChange(); carcosaOutdoors = value; } }
+        public bool CarcosaFacadeOnly { get { return carcosaFacadeOnly; } set { BeforePropsChange(); carcosaFacadeOnly = value; } }
+        public string CarcosaPlaceName { get { return carcosaPlaceName ?? ""; } set { BeforePropsChange(); carcosaPlaceName = value ?? ""; } }
+
+        public bool HasCarcosaExtra()
+        {
+            return (carcosaWeather != 0) || (carcosaMood != 0) || (carcosaFogDensity != 0f) ||
+                (carcosaFogStart != 0f) || (carcosaFogMax != 0f) ||
+                (carcosaFogR != 128) || (carcosaFogG != 128) || (carcosaFogB != 128) ||
+                (carcosaAmbient != 0) || (carcosaEmissive != 0f) ||
+                !carcosaOutdoors || carcosaFacadeOnly ||
+                ((carcosaPlaceName != null) && (carcosaPlaceName.Length > 0));
+        }
+
+        // Lump load: assign without undo (opening a map must not mark it dirty).
+        internal void ApplyCarcosaFromLump(int weather, int mood, float fogDensity, float fogStart, float fogMax,
+            int fogR, int fogG, int fogB, int ambient, float emissive, bool outdoors, bool facadeOnly, string placeName)
+        {
+            carcosaWeather = weather;
+            carcosaMood = mood;
+            carcosaFogDensity = fogDensity;
+            carcosaFogStart = fogStart;
+            carcosaFogMax = fogMax;
+            carcosaFogR = fogR;
+            carcosaFogG = fogG;
+            carcosaFogB = fogB;
+            carcosaAmbient = ambient;
+            carcosaEmissive = emissive;
+            carcosaOutdoors = outdoors;
+            carcosaFacadeOnly = facadeOnly;
+            carcosaPlaceName = placeName ?? "";
+        }
         public Lights CeilColor { get { return ceilColor; } set { BeforePropsChange(); ceilColor = value; } } // villsa
         public Lights FloorColor { get { return flrColor; } set { BeforePropsChange(); flrColor = value; } } // villsa
         public Lights ThingColor { get { return thingColor; } set { BeforePropsChange(); thingColor = value; } } // villsa
@@ -149,6 +207,11 @@ namespace CodeImp.DoomBuilder.Map
             this.thingColor = new Lights(128, 128, 128, 0); // villsa
             this.topColor = new Lights(128, 128, 128, 0); // villsa
             this.lwrColor = new Lights(128, 128, 128, 0); // villsa
+            this.carcosaOutdoors = true;
+            this.carcosaFogR = 128;
+            this.carcosaFogG = 128;
+            this.carcosaFogB = 128;
+            this.carcosaPlaceName = "";
 
             if (map == General.Map.Map)
                 General.Map.UndoRedo.RecAddSector(this);
@@ -259,6 +322,20 @@ namespace CodeImp.DoomBuilder.Map
                 s.rwLight(ref topColor);
                 s.rwLight(ref lwrColor);
             }
+
+            s.rwInt(ref carcosaWeather);
+            s.rwInt(ref carcosaMood);
+            s.rwFloat(ref carcosaFogDensity);
+            s.rwFloat(ref carcosaFogStart);
+            s.rwFloat(ref carcosaFogMax);
+            s.rwInt(ref carcosaFogR);
+            s.rwInt(ref carcosaFogG);
+            s.rwInt(ref carcosaFogB);
+            s.rwInt(ref carcosaAmbient);
+            s.rwFloat(ref carcosaEmissive);
+            s.rwBool(ref carcosaOutdoors);
+            s.rwBool(ref carcosaFacadeOnly);
+            s.rwString(ref carcosaPlaceName);
         }
 
         // After deserialization
@@ -291,6 +368,19 @@ namespace CodeImp.DoomBuilder.Map
             s.thingColor = thingColor;    // villsa
             s.topColor = topColor;    // villsa
             s.lwrColor = lwrColor;    // villsa
+            s.carcosaWeather = carcosaWeather;
+            s.carcosaMood = carcosaMood;
+            s.carcosaFogDensity = carcosaFogDensity;
+            s.carcosaFogStart = carcosaFogStart;
+            s.carcosaFogMax = carcosaFogMax;
+            s.carcosaFogR = carcosaFogR;
+            s.carcosaFogG = carcosaFogG;
+            s.carcosaFogB = carcosaFogB;
+            s.carcosaAmbient = carcosaAmbient;
+            s.carcosaEmissive = carcosaEmissive;
+            s.carcosaOutdoors = carcosaOutdoors;
+            s.carcosaFacadeOnly = carcosaFacadeOnly;
+            s.carcosaPlaceName = carcosaPlaceName;
             base.CopyPropertiesTo(s);
         }
 

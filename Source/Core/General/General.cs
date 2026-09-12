@@ -188,6 +188,7 @@ namespace CodeImp.DoomBuilder
 		private static DataLocationList autoloadresources = null;
         private static bool delaymainwindow;
         private static bool nosettings;
+        private static bool savethenexit;
 
         #endregion
 
@@ -222,6 +223,7 @@ namespace CodeImp.DoomBuilder
 		public static DataLocationList AutoLoadResources { get { return new DataLocationList(autoloadresources); } }
         public static bool DelayMainWindow { get { return delaymainwindow; } }
         public static bool NoSettings { get { return nosettings; } }
+        public static bool SaveThenExit { get { return savethenexit; } }
         public static EditingManager Editing { get { return editing; } }
         public static ErrorLogger ErrorLogger { get { return errorlogger; } }
 
@@ -590,7 +592,9 @@ namespace CodeImp.DoomBuilder
             // Load configuration
             General.WriteLogLine("Loading program configuration...");
             settings = new ProgramConfiguration();
-            string defaultsettingsfile = Path.Combine(apppath, SETTINGS_FILE);
+            string defaultsettingsfile = Path.Combine(apppath, DEFAULT_SETTINGS_FILE);
+            if (!File.Exists(defaultsettingsfile))
+                defaultsettingsfile = Path.Combine(apppath, SETTINGS_FILE);
             string usersettingsfile = nosettings ? defaultsettingsfile : Path.Combine(settingspath, SETTINGS_FILE);
                        if (settings.Load(usersettingsfile, defaultsettingsfile))
             {
@@ -757,6 +761,10 @@ namespace CodeImp.DoomBuilder
                 {
                     // Don't load or save program settings
                     nosettings = true;
+                }
+                else if (string.Compare(curarg, "-SAVETHENEXIT", true) == 0)
+                {
+                    savethenexit = true;
                 }
                 // Map name info?
                 else if (string.Compare(curarg, "-MAP", true) == 0)
@@ -1571,6 +1579,8 @@ namespace CodeImp.DoomBuilder
             // Log the message
             WriteLogLine(message);
 
+            if (savethenexit) return DialogResult.OK;
+
             // Use normal cursor
             oldcursor = Cursor.Current;
             Cursor.Current = Cursors.Default;
@@ -1601,6 +1611,8 @@ namespace CodeImp.DoomBuilder
 
             // Log the message
             WriteLogLine(message);
+
+            if (savethenexit) return DialogResult.OK;
 
             // Use normal cursor
             oldcursor = Cursor.Current;

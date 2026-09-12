@@ -336,6 +336,11 @@ namespace CodeImp.DoomBuilder.Config
             {
                 // Copy new configuration
                 General.WriteLogLine("Local user program configuration is missing!");
+                if (!File.Exists(defaultfilepathname))
+                {
+                    General.WriteLogLine("Default program configuration is also missing: " + defaultfilepathname);
+                    return false;
+                }
                 File.Copy(defaultfilepathname, cfgfilepathname);
                 General.WriteLogLine("New program configuration copied for local user");
             }

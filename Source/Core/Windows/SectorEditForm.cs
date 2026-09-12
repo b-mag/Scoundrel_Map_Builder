@@ -44,6 +44,16 @@ namespace CodeImp.DoomBuilder.Windows
         private const float LIGHTINCVALUE = 0.235f;
         private const float LIGHTDECVALUE = -0.1825f;
 
+        private ComboBox carcosaWeather;
+        private ComboBox carcosaMood;
+        private NumericUpDown carcosaDensity;
+        private NumericUpDown carcosaFogStart;
+        private NumericUpDown carcosaFogMax;
+        private Button carcosaFogColor;
+        private CheckBox carcosaOutdoors;
+        private TextBox carcosaPlace;
+        private bool carcosaPanelReady;
+
         // Constructor
         public SectorEditForm()
         {
@@ -73,6 +83,135 @@ namespace CodeImp.DoomBuilder.Windows
             floortex.Initialize();
             ceilingtex.Initialize();
             this.Height = heightpanel3.Height;
+
+            if (General.Map.FormatInterface.InDoom64Mode)
+                BuildCarcosaPanel();
+        }
+
+        private void BuildCarcosaPanel()
+        {
+            GroupBox box = new GroupBox();
+            box.Text = " Carcosa atmosphere ";
+            box.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            box.Location = new Point(9, settingsgroup.Bottom + 8);
+            box.Size = new Size(545, 205);
+            box.TabIndex = 20;
+
+            Label lw = new Label();
+            lw.Text = "Weather:";
+            lw.Location = new Point(12, 28);
+            lw.AutoSize = true;
+            carcosaWeather = new ComboBox();
+            carcosaWeather.DropDownStyle = ComboBoxStyle.DropDownList;
+            carcosaWeather.Location = new Point(90, 24);
+            carcosaWeather.Size = new Size(150, 24);
+            carcosaWeather.Items.AddRange(new object[] { "Clear", "Rain", "Fog", "Mist", "Storm" });
+            carcosaWeather.SelectedIndex = 0;
+
+            Label lm = new Label();
+            lm.Text = "Mood:";
+            lm.Location = new Point(260, 28);
+            lm.AutoSize = true;
+            carcosaMood = new ComboBox();
+            carcosaMood.DropDownStyle = ComboBoxStyle.DropDownList;
+            carcosaMood.Location = new Point(310, 24);
+            carcosaMood.Size = new Size(210, 24);
+            carcosaMood.Items.AddRange(new object[] {
+                "Default", "Shore", "Cemetery", "Fog bank", "Forest", "Indoor", "Lava", "Nitre", "Blood"
+            });
+            carcosaMood.SelectedIndex = 0;
+
+            Label ld = new Label();
+            ld.Text = "Fog dens:";
+            ld.Location = new Point(12, 64);
+            ld.AutoSize = true;
+            carcosaDensity = new NumericUpDown();
+            carcosaDensity.DecimalPlaces = 2;
+            carcosaDensity.Increment = 0.01M;
+            carcosaDensity.Minimum = 0;
+            carcosaDensity.Maximum = 0.35M;
+            carcosaDensity.Location = new Point(90, 60);
+            carcosaDensity.Size = new Size(70, 24);
+
+            Label ls = new Label();
+            ls.Text = "Start:";
+            ls.Location = new Point(170, 64);
+            ls.AutoSize = true;
+            carcosaFogStart = new NumericUpDown();
+            carcosaFogStart.Maximum = 4000;
+            carcosaFogStart.Location = new Point(210, 60);
+            carcosaFogStart.Size = new Size(70, 24);
+
+            Label lx = new Label();
+            lx.Text = "Max:";
+            lx.Location = new Point(290, 64);
+            lx.AutoSize = true;
+            carcosaFogMax = new NumericUpDown();
+            carcosaFogMax.Maximum = 4000;
+            carcosaFogMax.Location = new Point(325, 60);
+            carcosaFogMax.Size = new Size(70, 24);
+
+            Label lc = new Label();
+            lc.Text = "Fog RGB:";
+            lc.Location = new Point(12, 100);
+            lc.AutoSize = true;
+            carcosaFogColor = new Button();
+            carcosaFogColor.Location = new Point(90, 94);
+            carcosaFogColor.Size = new Size(70, 28);
+            carcosaFogColor.BackColor = Color.FromArgb(140, 132, 122);
+            carcosaFogColor.Click += carcosaFogColor_Click;
+
+            carcosaOutdoors = new CheckBox();
+            carcosaOutdoors.Text = "Outdoors";
+            carcosaOutdoors.Location = new Point(180, 98);
+            carcosaOutdoors.AutoSize = true;
+            carcosaOutdoors.Checked = true;
+
+            Label lp = new Label();
+            lp.Text = "Place:";
+            lp.Location = new Point(12, 140);
+            lp.AutoSize = true;
+            carcosaPlace = new TextBox();
+            carcosaPlace.Location = new Point(90, 136);
+            carcosaPlace.Size = new Size(430, 24);
+            carcosaPlace.MaxLength = 21;
+
+            Label hint = new Label();
+            hint.Text = "Writes the CARCOSA lump. Stock maps without extras stay unchanged.";
+            hint.Location = new Point(12, 170);
+            hint.AutoSize = true;
+            hint.ForeColor = Color.DimGray;
+
+            box.Controls.Add(lw);
+            box.Controls.Add(carcosaWeather);
+            box.Controls.Add(lm);
+            box.Controls.Add(carcosaMood);
+            box.Controls.Add(ld);
+            box.Controls.Add(carcosaDensity);
+            box.Controls.Add(ls);
+            box.Controls.Add(carcosaFogStart);
+            box.Controls.Add(lx);
+            box.Controls.Add(carcosaFogMax);
+            box.Controls.Add(lc);
+            box.Controls.Add(carcosaFogColor);
+            box.Controls.Add(carcosaOutdoors);
+            box.Controls.Add(lp);
+            box.Controls.Add(carcosaPlace);
+            box.Controls.Add(hint);
+
+            sectorproperties.Controls.Add(box);
+            sectorproperties.Height = box.Bottom + 12;
+            this.ClientSize = new Size(this.ClientSize.Width, sectorproperties.Bottom + 56);
+            carcosaPanelReady = true;
+        }
+
+        private void carcosaFogColor_Click(object sender, EventArgs e)
+        {
+            ColorDialog dlg = new ColorDialog();
+            dlg.Color = carcosaFogColor.BackColor;
+            dlg.FullOpen = true;
+            if (dlg.ShowDialog(this) == DialogResult.OK)
+                carcosaFogColor.BackColor = dlg.Color;
         }
 
         // This sets up the form to edit the given sectors
@@ -115,6 +254,30 @@ namespace CodeImp.DoomBuilder.Windows
 
             // Action
             tag.Text = sc.Tag.ToString();
+
+            if (carcosaPanelReady)
+            {
+                carcosaWeather.SelectedIndex = Math.Max(0, Math.Min(4, sc.CarcosaWeather));
+                carcosaMood.SelectedIndex = Math.Max(0, Math.Min(8, sc.CarcosaMood));
+                decimal dens = (decimal)sc.CarcosaFogDensity;
+                if (dens < carcosaDensity.Minimum) dens = carcosaDensity.Minimum;
+                if (dens > carcosaDensity.Maximum) dens = carcosaDensity.Maximum;
+                carcosaDensity.Value = dens;
+                decimal st = (decimal)sc.CarcosaFogStart;
+                if (st < carcosaFogStart.Minimum) st = carcosaFogStart.Minimum;
+                if (st > carcosaFogStart.Maximum) st = carcosaFogStart.Maximum;
+                carcosaFogStart.Value = st;
+                decimal mx = (decimal)sc.CarcosaFogMax;
+                if (mx < carcosaFogMax.Minimum) mx = carcosaFogMax.Minimum;
+                if (mx > carcosaFogMax.Maximum) mx = carcosaFogMax.Maximum;
+                carcosaFogMax.Value = mx;
+                carcosaFogColor.BackColor = Color.FromArgb(
+                    Math.Max(0, Math.Min(255, sc.CarcosaFogR)),
+                    Math.Max(0, Math.Min(255, sc.CarcosaFogG)),
+                    Math.Max(0, Math.Min(255, sc.CarcosaFogB)));
+                carcosaOutdoors.Checked = sc.CarcosaOutdoors;
+                carcosaPlace.Text = sc.CarcosaPlaceName;
+            }
 
             ////////////////////////////////////////////////////////////////////////
             // Now go for all sectors and change the options when a setting is different
@@ -282,6 +445,20 @@ namespace CodeImp.DoomBuilder.Windows
 
                 // Action
                 s.Tag = General.Clamp(tag.GetResult(s.Tag), General.Map.FormatInterface.MinTag, General.Map.FormatInterface.MaxTag);
+
+                if (carcosaPanelReady)
+                {
+                    s.CarcosaWeather = carcosaWeather.SelectedIndex < 0 ? 0 : carcosaWeather.SelectedIndex;
+                    s.CarcosaMood = carcosaMood.SelectedIndex < 0 ? 0 : carcosaMood.SelectedIndex;
+                    s.CarcosaFogDensity = (float)carcosaDensity.Value;
+                    s.CarcosaFogStart = (float)carcosaFogStart.Value;
+                    s.CarcosaFogMax = (float)carcosaFogMax.Value;
+                    s.CarcosaFogR = carcosaFogColor.BackColor.R;
+                    s.CarcosaFogG = carcosaFogColor.BackColor.G;
+                    s.CarcosaFogB = carcosaFogColor.BackColor.B;
+                    s.CarcosaOutdoors = carcosaOutdoors.Checked;
+                    s.CarcosaPlaceName = carcosaPlace.Text;
+                }
             }
 
             // Update the used textures
