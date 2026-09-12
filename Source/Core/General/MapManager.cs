@@ -1338,6 +1338,16 @@ namespace CodeImp.DoomBuilder
             Cursor.Current = Cursors.Default;
         }
 
+        /// <summary>
+        /// Open Script Editor on CARCLUA and jump to / insert an on_use handler for a thing type.
+        /// </summary>
+        internal void EditCarcosaLuaForThing(int thingType)
+        {
+            ShowScriptEditor();
+            if (scriptwindow != null && !scriptwindow.IsDisposed)
+                scriptwindow.Editor.InsertCarcosaThingStub(thingType);
+        }
+
         // This asks the user to save changes in script files
         // Returns false when cancelled by the user
         internal bool AskSaveScriptChanges()

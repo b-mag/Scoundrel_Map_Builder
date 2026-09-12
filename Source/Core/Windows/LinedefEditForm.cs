@@ -61,6 +61,16 @@ namespace CodeImp.DoomBuilder.Windows
             {
                 // Match position after the action group
                 idgroup.Top = actiongroup.Bottom + actiongroup.Margin.Bottom + idgroup.Margin.Top;
+                if (General.Map.FormatInterface.InDoom64Mode)
+                {
+                    Label hint = new Label();
+                    hint.Text = "Carcosa: this Tag + carcosa.open_tag(n) in CARCLUA opens matching doors.";
+                    hint.AutoSize = true;
+                    hint.ForeColor = Color.DimGray;
+                    hint.Location = new Point(10, idgroup.Height);
+                    idgroup.Height += 20;
+                    idgroup.Controls.Add(hint);
+                }
             }
             else
             {

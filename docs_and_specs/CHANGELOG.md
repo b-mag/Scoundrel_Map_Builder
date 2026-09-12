@@ -3,6 +3,54 @@
 All notable changes to **this repository** (editor / configs / docs) go here.  
 Engine-side changes live in the `scoundrel` repo; cross-link them when relevant.
 
+## 2026-09-12 — Default to Carcosa game config only
+
+### Configs
+- Open Map / New Map default to `Doom64.cfg`, display name **Carcosa (Doom 64)**.
+- Stock N64 / EX+ / Convert configs moved to `Build/Configurations/_archive/` so they no longer appear in the dropdown (Carcosa things + `CARCOSA`/`CARCLUA` live on the PC config only).
+
+### Builder code
+- `General.DEFAULT_GAME_CONFIG` + fallback selection in Open Map and Map Options when no `.dbs` preference exists (or it points at a removed config).
+
+## 2026-09-12 — Builder-first multi-map authoring
+
+### Builder code
+- **Help → Carcosa: Multi-map WAD Tutorial** opens `Help/carcosa_multimap.html` in the browser (no CHM rebuild). Covers opening `carcosa.wad`, switching `MAP##`, NPCs/Lua/zones, cross-map flags, and creating a megawad with **Save Map Into**.
+- **Tools → Pack Maps into WAD…** merges single-map `.wad` / `.mapwad` files into one multi-map PWAD (optional `CARCWLD` from a `.lua` on the first map). Same job as Scoundrel `:game:mergeCarcosaWad`, usable without leaving the editor.
+- `build-builder.ps1` copies the Carcosa help HTML + `default.css` into `Build/Help/`.
+
+### Authoring model
+- Day-to-day source of truth: one multi-map WAD; **Save Map** is the build. No project type. Gradle merge remains CLI/CI optional.
+
+### Related engine docs (`scoundrel`)
+- `docs/carcosa/LUA_SCRIPTING.md` / `CARCOSA_LUMP.md` aligned to megawad-canonical workflow.
+
+## 2026-09-12 — Open-world zones + world script + richer Lua stubs
+
+### Builder code
+- Sector Edit **Zone** dropdown writes `CarcosaAmbient` (atmosphere zone id for shared rain policies). Multi-select applies the same zone to many sectors.
+- **Edit Lua** stubs teach cross-map `flag` / `open_tag` patterns.
+- `CARCWLD` map lump (optional world script tab; same Lua cfg as CARCLUA).
+
+### Configs
+- `Carcosa_Lua.cfg`: `on_region`, `npc_at`, `move_npc`, `npc_alive`, `zone_weather`; flag help notes cross-map persistence.
+
+### Related engine work (`scoundrel`)
+- One `carcosa.wad` with MAP01–04; pack `world.lua` + `zones.json`; WorldState NPC roster + zone rolls; cross-map flag sample (aldon_slain → Shoals crypt).
+
+## 2026-09-12 — Thing Edit Script / RPG + CARCLUA jump
+
+### Builder code
+- Thing Edit: **Script / RPG** group writes CARCOSA thing extras (archetype, initial state, flags, dialogue fragment, patrol, quest flag).
+- **Edit Lua for this thing** opens the Script Editor on the map `CARCLUA` lump and jumps to an existing `thing_type` match, or inserts an `on_use` stub. Scripts stay map-level (one lump; things addressed by type / runtime id).
+- Linedef Identification: hint that `Tag` + `carcosa.open_tag(n)` opens matching doors.
+
+### Configs
+- `Carcosa_things.cfg`: `width` / `height` are editor view sizes; runtime billboard size is pack `beasts.json` `scale`.
+
+### Related engine work (`scoundrel`)
+- Gradle `:engine` / `:game` split. Runtime maps load only from pack PWADs. JUnit baseline for lumps, Lua sandbox, doors, sky, catalog scale.
+
 ## 2026-09-12 — Carcosa sector atmosphere + one-click build
 
 ### Configs (additive)

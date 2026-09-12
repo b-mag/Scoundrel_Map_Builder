@@ -46,6 +46,7 @@ namespace CodeImp.DoomBuilder.Windows
 
         private ComboBox carcosaWeather;
         private ComboBox carcosaMood;
+        private ComboBox carcosaZone;
         private NumericUpDown carcosaDensity;
         private NumericUpDown carcosaFogStart;
         private NumericUpDown carcosaFogMax;
@@ -94,7 +95,7 @@ namespace CodeImp.DoomBuilder.Windows
             box.Text = " Carcosa atmosphere ";
             box.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             box.Location = new Point(9, settingsgroup.Bottom + 8);
-            box.Size = new Size(545, 205);
+            box.Size = new Size(545, 240);
             box.TabIndex = 20;
 
             Label lw = new Label();
@@ -176,9 +177,26 @@ namespace CodeImp.DoomBuilder.Windows
             carcosaPlace.Size = new Size(430, 24);
             carcosaPlace.MaxLength = 21;
 
+            Label lz = new Label();
+            lz.Text = "Zone:";
+            lz.Location = new Point(12, 172);
+            lz.AutoSize = true;
+            carcosaZone = new ComboBox();
+            carcosaZone.DropDownStyle = ComboBoxStyle.DropDownList;
+            carcosaZone.Location = new Point(90, 168);
+            carcosaZone.Size = new Size(280, 24);
+            carcosaZone.Items.AddRange(new object[] {
+                "None",
+                "1 Hali coast (20% rain)",
+                "2 Carcosa sky",
+                "3 Demhe mist",
+                "4 Ash sky"
+            });
+            carcosaZone.SelectedIndex = 0;
+
             Label hint = new Label();
-            hint.Text = "Writes the CARCOSA lump. Stock maps without extras stay unchanged.";
-            hint.Location = new Point(12, 170);
+            hint.Text = "Zone = shared weather script (multi-select). Day/night is pack world.lua / CARCWLD.";
+            hint.Location = new Point(12, 202);
             hint.AutoSize = true;
             hint.ForeColor = Color.DimGray;
 
@@ -197,6 +215,8 @@ namespace CodeImp.DoomBuilder.Windows
             box.Controls.Add(carcosaOutdoors);
             box.Controls.Add(lp);
             box.Controls.Add(carcosaPlace);
+            box.Controls.Add(lz);
+            box.Controls.Add(carcosaZone);
             box.Controls.Add(hint);
 
             sectorproperties.Controls.Add(box);
@@ -277,6 +297,7 @@ namespace CodeImp.DoomBuilder.Windows
                     Math.Max(0, Math.Min(255, sc.CarcosaFogB)));
                 carcosaOutdoors.Checked = sc.CarcosaOutdoors;
                 carcosaPlace.Text = sc.CarcosaPlaceName;
+                carcosaZone.SelectedIndex = Math.Max(0, Math.Min(carcosaZone.Items.Count - 1, sc.CarcosaAmbient));
             }
 
             ////////////////////////////////////////////////////////////////////////
@@ -458,6 +479,7 @@ namespace CodeImp.DoomBuilder.Windows
                     s.CarcosaFogB = carcosaFogColor.BackColor.B;
                     s.CarcosaOutdoors = carcosaOutdoors.Checked;
                     s.CarcosaPlaceName = carcosaPlace.Text;
+                    s.CarcosaAmbient = carcosaZone.SelectedIndex < 0 ? 0 : carcosaZone.SelectedIndex;
                 }
             }
 

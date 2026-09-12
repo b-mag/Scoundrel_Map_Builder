@@ -432,6 +432,89 @@ namespace CodeImp.DoomBuilder.Controls
             if (t != null) t.Focus();
         }
 
+        /// <summary>
+        /// Open the map's CARCLUA tab and jump to (or insert) an on_use stub for [thingType].
+        /// Scripts stay map-level — one lump, things addressed by type / runtime id.
+        /// </summary>
+        public void InsertCarcosaThingStub(int thingType)
+        {
+            ScriptLumpDocumentTab carclua = null;
+            foreach (TabPage page in tabs.TabPages)
+            {
+                ScriptLumpDocumentTab lump = page as ScriptLumpDocumentTab;
+                if (lump != null && string.Compare(lump.LumpName, "CARCLUA", true) == 0)
+                {
+                    carclua = lump;
+                    break;
+                }
+            }
+            if (carclua == null) return;
+
+            tabs.SelectedTab = carclua;
+            string text = BytesToText(carclua.GetEditorBytes());
+            string[] needles = new string[] {
+                "thing_type == " + thingType,
+                "thing_type ~= " + thingType
+            };
+            foreach (string needle in needles)
+            {
+                int at = text.IndexOf(needle, StringComparison.Ordinal);
+                if (at >= 0)
+                {
+                    carclua.SelectionStart = at;
+                    carclua.SelectionEnd = at + needle.Length;
+                    carclua.Focus();
+                    return;
+                }
+            }
+
+            string stub;
+            if (text.IndexOf("function on_use", StringComparison.OrdinalIgnoreCase) >= 0)
+            {
+                stub =
+                    "\r\n-- Thing type " + thingType + " — paste into on_use:\r\n" +
+                    "--   if thing_type == " + thingType + " then\r\n" +
+                    "--     if carcosa.flag(\"my_flag\") then\r\n" +
+                    "--       carcosa.open_tag(7)  -- linedef Tag on the door\r\n" +
+                    "--       carcosa.say(\"NPC\", \"The way is open.\")\r\n" +
+                    "--     else\r\n" +
+                    "--       carcosa.say(\"NPC\", \"Not yet.\")\r\n" +
+                    "--     end\r\n" +
+                    "--     return true\r\n" +
+                    "--   end\r\n";
+            }
+            else
+            {
+                stub =
+                    "\r\nfunction on_use(id, thing_type)\r\n" +
+                    "  if thing_type ~= " + thingType + " then return false end\r\n" +
+                    "  -- Cross-map: set_flag here; other maps check flag in on_load / on_use.\r\n" +
+                    "  if carcosa.flag(\"my_flag\") then\r\n" +
+                    "    carcosa.open_tag(7)\r\n" +
+                    "    carcosa.say(\"NPC\", \"The way is open.\")\r\n" +
+                    "    return true\r\n" +
+                    "  end\r\n" +
+                    "  carcosa.say(\"NPC\", \"Not while the seal holds.\")\r\n" +
+                    "  return true\r\n" +
+                    "end\r\n";
+            }
+            string combined = text.TrimEnd() + stub;
+            carclua.SetEditorBytes(Encoding.UTF8.GetBytes(combined));
+            int jump = combined.IndexOf("thing_type", Math.Max(0, combined.Length - stub.Length), StringComparison.Ordinal);
+            if (jump < 0) jump = combined.Length;
+            carclua.SelectionStart = jump;
+            carclua.SelectionEnd = jump;
+            carclua.Focus();
+        }
+
+        private static string BytesToText(byte[] data)
+        {
+            if (data == null || data.Length == 0) return "";
+            int len = data.Length;
+            while (len > 0 && data[len - 1] == 0) len--;
+            return Encoding.UTF8.GetString(data, 0, len);
+        }
+
         // This does an implicit save on all documents that use implicit saving
         // Call this to save the lumps before disposing the panel!
         public void ImplicitSave()

@@ -123,6 +123,17 @@ namespace CodeImp.DoomBuilder.Controls
             editor.LaunchKeywordHelp();
         }
 
+        public byte[] GetEditorBytes()
+        {
+            return editor.GetText();
+        }
+
+        public void SetEditorBytes(byte[] data)
+        {
+            editor.SetText(data);
+            editor.IsChanged = true;
+        }
+
         // This refreshes the style settings
         public virtual void RefreshSettings()
         {

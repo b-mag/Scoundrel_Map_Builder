@@ -124,6 +124,10 @@ namespace CodeImp.DoomBuilder.Windows
             else
                 gameconfig = mapsettings.ReadSetting("gameconfig", "");
 
+            // Carcosa default when the WAD has no saved preference
+            if (string.IsNullOrEmpty(gameconfig))
+                gameconfig = General.DEFAULT_GAME_CONFIG;
+
             // Go for all configurations
             for (int i = 0; i < General.Configs.Count; i++)
             {
@@ -156,6 +160,13 @@ namespace CodeImp.DoomBuilder.Windows
                         }
                     }
                 }
+            }
+
+            // Last resort: Carcosa Doom 64 config (or the only registered config)
+            if (config.SelectedIndex == -1)
+            {
+                int fallback = General.IndexOfDefaultGameConfig();
+                if (fallback >= 0) config.SelectedIndex = fallback;
             }
 
             // Done

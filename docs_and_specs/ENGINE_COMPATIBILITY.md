@@ -1,7 +1,7 @@
 # Engine ↔ Doom Builder 64 compatibility
 
 **Status (2026-09-10):** Geometry **parse path** is being brought in line with Builder.  
-Gameplay simulation of stock D64 specials is still largely **not** implemented. Showcase maps are still Kotlin-authored (`SectorMapBuilder`), not WAD round-trips.
+Gameplay simulation of stock D64 specials is still incomplete. **Runtime maps load from Builder PWADs** via `pack.json` + `Doom64SessionFactory`. Kotlin `CarcosaWorldBuilder` is a seed exporter only (`:game:exportCarcosaMaps`) and must not run as a live fallback.
 
 ## Ground truth
 
@@ -31,13 +31,9 @@ Configs: `Build/Configurations/Doom64.cfg` + `Includes/D64_*.cfg`
 
 ## Critical gaps (maps “open and play”)
 
-1. **No playable WAD pipeline in PlayScreen** — showcase bypasses WAD; need a load path + test PWAD from Builder.
-2. **Two-sided / upper-lower-mid rendering** — multi-span raycast done; mid needs `RENDER_MIDDLE`.
-3. **Linedef specials 1–511** — use-doors MVP done (rising ceiling); plats, teleports, exits, switches still todo.
-4. **Things → actors** — player start helper exists; keys/monsters/artifacts not spawned from `THINGS`.
-5. **MACROS / BLAM** — no VM.
-6. **Texture hashes** — Builder hash fn + Carcosa name→path table wired; expand names as maps need.
-7. **WAD export** — door fixture via `Doom64MapWriter` (`d64_room_door.mapwad`); full showcase export later.
+1. **MACROS / BLAM** — parsed as opaque bytes, not executed.
+2. **Some linedef specials** — use-doors, plats, teleports, exits MVP; scroll still todo.
+3. **Texture hashes** — expand names as maps need.
 
 ## Round-trip
 

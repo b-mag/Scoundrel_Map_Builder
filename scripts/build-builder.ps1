@@ -52,9 +52,14 @@ if (-not $msbuild) {
     Write-Error "MSBuild not found. Install Visual Studio 2022 (or Build Tools) with the .NET desktop workload."
 }
 
-$slimdx = Join-Path $RepoRoot "Build\SlimDX.dll"
+$buildDir = Join-Path $RepoRoot "Build"
+$slimdx = Join-Path $buildDir "SlimDX.dll"
+$sharpzip = Join-Path $buildDir "Sharpzip.dll"
 if (-not (Test-Path $slimdx)) {
     Write-Error "Missing Build\SlimDX.dll. The Build\ runtime tree must ship with SlimDX and Sharpzip."
+}
+if (-not (Test-Path $sharpzip)) {
+    Write-Error "Missing Build\Sharpzip.dll. The Build\ runtime tree must ship with SlimDX and Sharpzip."
 }
 
 $ndp35 = Test-Path "$env:WINDIR\Microsoft.NET\Framework\v3.5\csc.exe"
@@ -71,9 +76,47 @@ if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }
 
-$exe = Join-Path $RepoRoot "Build\Builder.exe"
+$exe = Join-Path $buildDir "Builder.exe"
 if (-not (Test-Path $exe)) {
     Write-Error "Build reported success but Build\Builder.exe is missing."
 }
+
+# Runtime deps must sit next to Builder.exe — never in Plugins\. PluginManager
+# loads every *.dll there as a plug; Sharpzip/SlimDX (and a copied Builder.exe)
+# produce "not supposed to be in the Plugins subdirectory" errors on launch.
+$pluginsDir = Join-Path $buildDir "Plugins"
+if (Test-Path $pluginsDir) {
+    foreach ($name in @("Sharpzip.dll", "SlimDX.dll", "Builder.exe", "Builder.pdb")) {
+        $stray = Join-Path $pluginsDir $name
+        if (Test-Path $stray) {
+            # Prefer keeping a root copy if somehow only Plugins had it.
+            $rootCopy = Join-Path $buildDir $name
+            if (($name -like "*.dll") -and -not (Test-Path $rootCopy)) {
+                Copy-Item -Force $stray $rootCopy
+                Write-Host "Restored $name to Build\"
+            }
+            Remove-Item -Force $stray
+            Write-Host "Removed Plugins\$name (must live next to Builder.exe)"
+        }
+    }
+}
+
+foreach ($name in @("Sharpzip.dll", "SlimDX.dll")) {
+    if (-not (Test-Path (Join-Path $buildDir $name))) {
+        Write-Error "Build finished but Build\$name is missing next to Builder.exe."
+    }
+}
+
+# Carcosa HTML help (browser) — no CHM rebuild required
+$helpSrc = Join-Path $RepoRoot "Help"
+$helpDst = Join-Path $buildDir "Help"
+New-Item -ItemType Directory -Force -Path $helpDst | Out-Null
+foreach ($name in @("carcosa_multimap.html", "default.css")) {
+    $src = Join-Path $helpSrc $name
+    if (Test-Path $src) {
+        Copy-Item -Force $src (Join-Path $helpDst $name)
+    }
+}
+
 Write-Host "Output: $exe"
 exit 0

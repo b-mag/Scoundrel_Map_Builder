@@ -464,6 +464,7 @@
     <Compile Include="General\Launcher.cs" />
     <Compile Include="IO\Lump.cs" />
     <Compile Include="IO\CarcosaLumpIO.cs" />
+    <Compile Include="IO\CarcosaMultiMapPacker.cs" />
     <Compile Include="IO\MapSetIO.cs" />
     <Compile Include="IO\UniversalMapSetIO.cs" />
     <Compile Include="IO\UnknownImageReader.cs" />
@@ -763,6 +764,9 @@
     </Compile>
     <Compile Include="Windows\PasteOptionsForm.Designer.cs">
       <DependentUpon>PasteOptionsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Windows\PackMapsForm.cs">
+      <SubType>Form</SubType>
     </Compile>
 	<Compile Include="Windows\PluginToolbarButton.cs" />
     <Compile Include="Windows\ScriptFindReplaceForm.cs">

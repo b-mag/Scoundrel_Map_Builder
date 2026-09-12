@@ -127,6 +127,9 @@ namespace CodeImp.DoomBuilder
         private const string SPRITES_DIR = "Sprites";
         private const string HELP_FILE = "Refmanual.chm";
 
+        /// <summary>Carcosa maps use the Doom 64 PC format config (things, CARCOSA/CARCLUA lumps).</summary>
+        internal const string DEFAULT_GAME_CONFIG = "Doom64.cfg";
+
         // SCROLLINFO structure
         internal struct ScrollInfo
         {
@@ -248,6 +251,17 @@ namespace CodeImp.DoomBuilder
 
             // None found
             return null;
+        }
+
+        /// <summary>Index of <see cref="DEFAULT_GAME_CONFIG"/> in <see cref="Configs"/>, or 0 if missing.</summary>
+        internal static int IndexOfDefaultGameConfig()
+        {
+            for (int i = 0; i < configs.Count; i++)
+            {
+                if (string.Compare(configs[i].Filename, DEFAULT_GAME_CONFIG, true) == 0)
+                    return i;
+            }
+            return configs.Count > 0 ? 0 : -1;
         }
 
         // This loads and returns a game configuration
@@ -1655,6 +1669,70 @@ namespace CodeImp.DoomBuilder
 
             // Show help file
             Help.ShowHelp(mainwindow, filepathname, HelpNavigator.Topic, pagefile);
+        }
+
+        /// <summary>
+        /// Open a Help HTML page in the default browser. Looks under Build\Help and ../Help
+        /// so Carcosa tutorials work without rebuilding Refmanual.chm.
+        /// </summary>
+        public static void ShowHtmlHelp(string pagefile)
+        {
+            string appParent = Path.GetDirectoryName(apppath.TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar));
+            string[] candidates = new string[]
+            {
+                Path.Combine(Path.Combine(apppath, "Help"), pagefile),
+                (appParent != null) ? Path.Combine(Path.Combine(appParent, "Help"), pagefile) : null,
+                Path.Combine(Path.Combine(Path.Combine(apppath, ".."), "Help"), pagefile),
+            };
+            string found = null;
+            foreach (string c in candidates)
+            {
+                if (string.IsNullOrEmpty(c)) continue;
+                try
+                {
+                    string full = Path.GetFullPath(c);
+                    if (File.Exists(full))
+                    {
+                        found = full;
+                        break;
+                    }
+                }
+                catch
+                {
+                }
+            }
+            if (found == null)
+            {
+                WriteLogLine("ERROR: Can't find Help page \"" + pagefile + "\"");
+                MessageBox.Show(mainwindow,
+                    "Can't find Help\\" + pagefile + ".\nRebuild Builder or copy Help\\ into the Build folder.",
+                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            try
+            {
+                System.Diagnostics.Process.Start(found);
+            }
+            catch (Exception ex)
+            {
+                WriteLogLine("ERROR: Opening help page failed: " + ex.Message);
+                MessageBox.Show(mainwindow, "Could not open help:\n" + ex.Message,
+                    Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        [BeginAction("carcosamultimaphelp")]
+        internal static void ActionCarcosaMultimapHelp()
+        {
+            ShowHtmlHelp("carcosa_multimap.html");
+        }
+
+        [BeginAction("packmapswad")]
+        internal static void ActionPackMapsWad()
+        {
+            PackMapsForm form = new PackMapsForm();
+            form.ShowDialog(mainwindow);
+            form.Dispose();
         }
 
         // This returns a unique temp filename

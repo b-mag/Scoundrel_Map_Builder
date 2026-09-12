@@ -55,6 +55,7 @@ namespace CodeImp.DoomBuilder.Controls
         public override bool IsSaveAsRequired { get { return false; } }
         public override bool IsClosable { get { return false; } }
         public override bool IsReconfigurable { get { return false; } }
+        public string LumpName { get { return lumpname; } }
 
         #endregion
 
