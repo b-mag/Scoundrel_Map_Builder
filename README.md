@@ -1,48 +1,57 @@
-# Doom Builder 64 Enhanced
-Doom Builder 64 Enhanced is a fork of Doom Builder 64, Its main objective is to update the Doom Builder 64 source code to the latest version of the original Doom Builder 2 source code, and also to improve it and add new features for mappers.
+# Doom Builder 64 Enhanced (Carcosa / Scoundrel)
 
-# Doom 64 engines supported
+This is a **fork of [Doom Builder 64](https://github.com/styd051/Doom-Builder-64)** — itself a Doom Builder 2 variant by Kaiser, later maintained by Styd051 and Immorpher — used to author maps for **Carcosa** on **Scoundrel**.
 
-* **DOOM 64 Remastered**
-* **DOOM 64 EX+**
-* **DOOM 64 EX+ Enhanced**
-* **DOOM 64 N64**
+Scoundrel is a **new, Android-first engine** (desktop for authoring and debug). It is not Doom 64 EX, not the N64 original, and not the 2020 remaster. Rendering, collision, atmosphere, and gameplay are its own: column raycaster, sector fog and weather, RPG systems. Maps saved here are meant to load in that engine.
 
-# The Plugins That Are Supported
+## Compatibility (read this)
 
-* Comments Panel
-* Copy Paste Sector Props
-* Stair Sector Builder
-* Statistics
-* Tag Range
-* Reject Editor (Currently, there's a problem when you make your first save on a new map that doesn't yet contain its own WAD file, This causes the Reject Editor plugin to crash the editor, because during the first save on a new map, the editor creates its own WAD file, This is because the Reject Editor plugin looks for the REJECT lump in the map's WAD file, However, when you load a map that already has its own WAD file into the editor and save, the Reject Editor plugin won't crash the editor, it will function correctly.)
+We started from Doom Builder 64’s map format so existing D64 geometry, lights, and things can round-trip. **That is a starting point, not a promise.**
 
-# Priority Things to Do First for Doom Builder 64 Enhanced
+This fork will keep adding Carcosa-only data (the `CARCOSA` / `CARCLUA` lumps, thing types 9200–9399, Sector Edit atmosphere, and more). Those extras, and any later format drift, **may or may not stay backward compatible** with stock Doom Builder 64, Doom 64 EX+, the remaster, or N64 toolchains.
 
-* Update the Doom Builder 64 source code to the latest version of the original Doom Builder 2 source code(Currently, the source code for Doom Builder 64 Enhanced is not yet updated to the latest version of the original Doom Builder 2 source code, I'm working on it gradually, updating the source code over time.)
+- Maps **without** Carcosa lumps should still open in the parent editor in the usual way — until they don’t. Treat that as best-effort.
+- Maps **with** Carcosa extras are for Scoundrel. Do not assume EX+ or the remaster will ignore them safely.
+- Visuals in Scoundrel will not match EX-Plus or the remaster. Sky, fog, floors-to-horizon, and weather follow the Android renderer, not a port of the N64/PC software.
 
-# Doom Builder 64
-Doom Builder 64 is a custom fork of Doom Builder 2 by CodeImp made to support mapping for DOOM 64 on N64 and on PC (EX/Steam/GOG), originally developed by Samuel "Kaiser" Villarreal and now maintained by Styd051 and Immorpher. 
+If you need a faithful Doom 64 mapper for EX+ / remaster / N64, use **upstream Doom Builder 64 Enhanced**, not this tree.
+
+## What this editor is for
+
+| | |
+|--|--|
+| **This repo** | Geometry, lights, things, scripts, and Carcosa atmosphere for Scoundrel |
+| **Scoundrel** (`../scoundrel`) | Runtime: play, Android build, raycast/sector render |
+| **Kotlin map builders** | Showcase PWADs until the WAD pipeline is the only path |
+
+Longer notes live in [`docs_and_specs/`](docs_and_specs/): [VISION](docs_and_specs/VISION.md), [ROADMAP](docs_and_specs/ROADMAP.md), [CHANGELOG](docs_and_specs/CHANGELOG.md), [engine compatibility](docs_and_specs/ENGINE_COMPATIBILITY.md).
 
 ## Installation
-Doom Builder 64 doesn't ship a traditional installer. To start using Doom Builder 64, simply download a .zip file containing the binaries from the Releases page, extract it and launch `Builder.exe`.
 
-If you're updating an existing installation, it is recommended it you delete your old Doom Builder 64 folder entirely and replace its contents with the new version.
-### Requirements
-Doom Builder 64 requires **Microsoft .NET Framework 3.5** installed. This should be already installed on the vast majority of computers. If your computer is an exception, consult Microsoft's pages on how to install.
+No installer. Build (below) or copy a `Build\` tree and run `Builder.exe`. Replacing an older Doom Builder 64 folder in place is the usual upgrade; this fork’s configs and lumps are not a drop-in over upstream.
+
+Requires **Microsoft .NET Framework 3.5**.
 
 ## Building
-Currently, only building on **Windows** is tested and officially supported. To build Doom Builder 64, use the Visual Studio solution file provided in the repository.
 
-## Links
-If you have any problems or suggestions, use the Issues or Pull Requests pages in this repository or join the [DOOM 64 Discord server](https://discord.gg/Ktxz8nz).
+Windows only. Double-click `build.bat` (runs `scripts/build-builder.ps1`, `Release|x86`) or open `Builder.sln` in Visual Studio / Build Tools. Output: `Build\Builder.exe`.
 
-## Credits
+Launch from `Build\` so SlimDX and the configuration files resolve.
 
-* **Codeimp:** for creating Doom Builder 2.
-* **Boris_i:** for contributing to Doom Builder 2.
-* **MaxED:** for creating GZDoom Builder and for adding new features to the editor.
-* **Kaiser:** for creating Doom Builder 64.
-* **Kovic:** for having done some things and made some improvements to Doom Builder 64.
-* **Diema:** for having created the nodebuilder dma-bsp64, which is a fork of D64BSP.
-* **Immorpher:** for contribute to the Doom Builder 64 Enhanced project.
+Showcase maps: `../scoundrel/assets/maps/`. Marker lumps are **not** all `MAP01`:
+
+| PWAD | Marker |
+|------|--------|
+| `d64_room_door.mapwad`, `carcosa_shoals.mapwad` | MAP01 |
+| `carcosa_yhtill.mapwad` | MAP02 |
+| `carcosa_demhe.mapwad` | MAP03 |
+| `carcosa_diadem.mapwad` | MAP04 |
+
+Picking the wrong marker yields “Unable to read the map data structures with the specified configuration.”
+
+## Lineage
+
+- **CodeImp** — Doom Builder 2
+- **Kaiser (Samuel Villarreal)** — Doom Builder 64
+- **Styd051, Immorpher, and contributors** — Doom Builder 64 Enhanced (the parent this repo was forked from)
+- **This tree** — Carcosa / Scoundrel authoring; not an upstream tracking branch

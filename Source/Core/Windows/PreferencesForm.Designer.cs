@@ -965,7 +965,7 @@ namespace CodeImp.DoomBuilder.Windows
             this.viewdistance.LargeChange = 2;
             this.viewdistance.Location = new System.Drawing.Point(135, 201);
             this.viewdistance.Margin = new System.Windows.Forms.Padding(4);
-            this.viewdistance.Maximum = 15;
+            this.viewdistance.Maximum = 50;
             this.viewdistance.Minimum = 1;
             this.viewdistance.Name = "viewdistance";
             this.viewdistance.Size = new System.Drawing.Size(188, 56);

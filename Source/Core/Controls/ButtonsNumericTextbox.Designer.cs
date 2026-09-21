@@ -34,10 +34,10 @@ namespace CodeImp.DoomBuilder.Controls
             // 
             // buttons
             // 
-            this.buttons.LargeChange = 10000;
+            this.buttons.LargeChange = 32767;
             this.buttons.Location = new System.Drawing.Point(163, 0);
-            this.buttons.Maximum = 10000;
-            this.buttons.Minimum = -10000;
+            this.buttons.Maximum = 32767;
+            this.buttons.Minimum = -32767;
             this.buttons.Name = "buttons";
             this.buttons.Size = new System.Drawing.Size(18, 24);
             this.buttons.TabIndex = 1;

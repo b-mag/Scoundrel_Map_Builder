@@ -224,7 +224,7 @@ namespace CodeImp.DoomBuilder.Config
                 visualbilinear = cfg.ReadSetting("visualbilinear", true);
                 mousespeed = cfg.ReadSetting("mousespeed", 100);
                 movespeed = cfg.ReadSetting("movespeed", 500);
-                viewdistance = cfg.ReadSetting("viewdistance", 3000.0f);
+                viewdistance = cfg.ReadSetting("viewdistance", 6000.0f);
                 invertyaxis = cfg.ReadSetting("invertyaxis", false);
                 scriptfontname = cfg.ReadSetting("scriptfontname", "Lucida Console");
                 scriptfontsize = cfg.ReadSetting("scriptfontsize", 10);
@@ -336,6 +336,11 @@ namespace CodeImp.DoomBuilder.Config
             {
                 // Copy new configuration
                 General.WriteLogLine("Local user program configuration is missing!");
+                if (!File.Exists(defaultfilepathname))
+                {
+                    General.WriteLogLine("Default program configuration is also missing: " + defaultfilepathname);
+                    return false;
+                }
                 File.Copy(defaultfilepathname, cfgfilepathname);
                 General.WriteLogLine("New program configuration copied for local user");
             }

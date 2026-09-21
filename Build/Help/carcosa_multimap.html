@@ -1,0 +1,137 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN" "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+	<title>Carcosa — Multi-map WAD tutorial</title>
+	<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+	<link rel="stylesheet" type="text/css" href="default.css" media="screen" title="Default" />
+</head>
+<body>
+
+	<object type="application/x-oleobject" classid="clsid:1e2a7bd0-dab9-11d0-b93a-00c04fc99f9e">
+	<param name="keyword" value="Carcosa">
+	<param name="keyword" value="Multi-map">
+	<param name="keyword" value="Megawad">
+	</object>
+
+	<div id="title"><h1>Carcosa — Multi-map WAD tutorial</h1></div>
+
+	<div id="contents">
+	<p>
+		Carcosa maps are authored in Doom Builder 64 Enhanced. Day-to-day work uses
+		<strong>one multi-map WAD</strong> (for the showcase: <code>carcosa.wad</code> with
+		<code>MAP01</code>–<code>MAP04</code>). <strong>Save Map</strong> is the build step —
+		you do not need Gradle for normal editing.
+	</p>
+
+	<h2>1. Open the Carcosa megawad</h2>
+	<ol>
+		<li>File → <strong>Open Map</strong>.</li>
+		<li>Select <code>scoundrel/assets/maps/carcosa.wad</code> (or your own multi-map PWAD).</li>
+		<li>Choose game configuration <strong>Carcosa (Doom 64)</strong> (selected by default).</li>
+		<li>Pick a map marker: <code>MAP01</code> Pallid Shoals, <code>MAP02</code> Yhtill,
+			<code>MAP03</code> Demhe, <code>MAP04</code> Ash Diadem.</li>
+	</ol>
+
+	<h2>2. Switch biomes</h2>
+	<p>
+		Only one map is open at a time. To edit another biome: File → <strong>Open Map</strong>
+		again on the <em>same</em> WAD and pick a different <code>MAP##</code>. Save first if prompted.
+	</p>
+
+	<h2>3. Place an NPC and edit Lua</h2>
+	<ol>
+		<li>Things mode → place a Carcosa thing (for example Enkai).</li>
+		<li>Edit the thing → <strong>Script / RPG</strong> group for extras.</li>
+		<li><strong>Edit Lua for this thing</strong> opens the map <code>CARCLUA</code> lump
+			and jumps to (or inserts) an <code>on_use</code> stub.</li>
+	</ol>
+	<p>
+		Scripts are map-level: one <code>CARCLUA</code> per map. Things are addressed by
+		runtime id / <code>thing_type</code>.
+	</p>
+
+	<h2>4. Atmosphere and zones</h2>
+	<ol>
+		<li>Select one or more sectors → Sector Edit → <strong>Carcosa atmosphere</strong>.</li>
+		<li>Set weather / fog / outdoors / place name as needed.</li>
+		<li><strong>Zone</strong> assigns a shared rain policy (multi-select applies the same zone
+			to many outdoor sectors). Day/night is pack / world script owned — do not reset
+			<code>sky_clock</code> in every map script.</li>
+	</ol>
+
+	<h2>5. Script Editor lumps</h2>
+	<ul>
+		<li><code>CARCLUA</code> — per-map events (<code>on_load</code>, <code>on_use</code>, <code>on_kill</code>, …).</li>
+		<li><code>CARCWLD</code> — optional world script (prefer on <code>MAP01</code>) for planet clock
+			and global quest watches. The Scoundrel pack also ships <code>data/world.lua</code>.</li>
+	</ul>
+
+	<h2>6. Cross-map quests (flags)</h2>
+	<p>
+		Flags, counters, items, world time, NPC roster, and zone rolls survive region hops.
+		Map scripts talk through <code>carcosa.flag</code> / <code>set_flag</code>.
+	</p>
+	<pre>
+-- MAP04 (boss map)
+function on_kill(id, thing_type)
+  if thing_type == 9204 then
+    carcosa.set_flag("aldon_slain")
+  end
+end
+
+-- MAP01 (hub)
+function on_load()
+  if carcosa.flag("aldon_slain") then
+    carcosa.open_tag(7)  -- linedef Tag = 7 on the door
+  end
+end
+	</pre>
+	<p>
+		Set the door linedef <strong>Tag</strong> in Linedef Edit to match <code>open_tag(n)</code>.
+	</p>
+
+	<h2>7. Create a basic multi-map game WAD from scratch</h2>
+	<ol>
+		<li>File → <strong>New Map</strong>. Name the lump <code>MAP01</code>. Draw a room, place a player start.</li>
+		<li>File → <strong>Save Map</strong> → e.g. <code>mygame.wad</code>.</li>
+		<li>File → <strong>New Map</strong>. Name the lump <code>MAP02</code>. Build the second area.</li>
+		<li>File → <strong>Save Map Into…</strong> → choose the same <code>mygame.wad</code>.
+			Builder appends <code>MAP02</code> and keeps <code>MAP01</code>.</li>
+		<li>Repeat for <code>MAP03</code>, <code>MAP04</code>, …</li>
+		<li>Add <code>CARCLUA</code> / Carcosa atmosphere / NPCs on each map as needed.</li>
+	</ol>
+	<p>
+		In the Scoundrel pack, list regions in <code>pack.json</code> against that file with
+		<code>"map": "maps/mygame.wad"</code> and <code>"mapName": "MAP01"</code> (etc.).
+		See the engine docs under <code>scoundrel/docs/carcosa/</code>.
+	</p>
+
+	<h2>8. Optional: pack separate biome files</h2>
+	<p>
+		If you keep solo files (<code>carcosa_shoals.mapwad</code>, …) for focused work:
+	</p>
+	<ul>
+		<li><strong>Tools → Pack maps into WAD…</strong> — pick sources, assign <code>MAP##</code>,
+			optional world <code>.lua</code> as <code>CARCWLD</code> on the first map, write the megawad.</li>
+		<li>Command line (CI / recovery): from the Scoundrel repo,
+			<code>gradlew :game:mergeCarcosaWad</code>.</li>
+	</ul>
+	<p>
+		Neither is required when you edit <code>carcosa.wad</code> (or your megawad) directly and Save.
+	</p>
+
+	<h2>9. Playtest</h2>
+	<p>
+		Save the map, then run the Carcosa desktop build (Scoundrel <code>lwjgl3</code>) with the pack
+		that points at your WAD. Builder <strong>Test Map</strong> still expects a classic Doom EXE;
+		Carcosa launch from Test Map is not wired yet.
+	</p>
+
+	<h2>Do not</h2>
+	<ul>
+		<li>Run <code>:game:exportCarcosaMaps</code> after hand-editing — it overwrites Builder work with Kotlin seeds.</li>
+		<li>Merge all biomes into one giant <code>MAP##</code> mesh — stay streamed (one map loaded at a time).</li>
+	</ul>
+	</div>
+</body>
+</html>

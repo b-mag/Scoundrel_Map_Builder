@@ -54,6 +54,10 @@ namespace CodeImp.DoomBuilder.Windows
             // Keep settings
             this.options = options;
 
+            // New maps / empty options default to Carcosa Doom 64
+            if (string.IsNullOrEmpty(options.ConfigFile))
+                options.ConfigFile = General.DEFAULT_GAME_CONFIG;
+
             // Go for all configurations
             for (int i = 0; i < General.Configs.Count; i++)
             {
@@ -66,6 +70,13 @@ namespace CodeImp.DoomBuilder.Windows
                     // Select this item
                     config.SelectedIndex = index;
                 }
+            }
+
+            // Fallback if a stale .dbs points at a removed config
+            if (config.SelectedIndex == -1)
+            {
+                int fallback = General.IndexOfDefaultGameConfig();
+                if (fallback >= 0) config.SelectedIndex = fallback;
             }
 
             // Set the level name
