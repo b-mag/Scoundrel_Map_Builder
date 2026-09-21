@@ -224,7 +224,7 @@ namespace CodeImp.DoomBuilder.Config
                 visualbilinear = cfg.ReadSetting("visualbilinear", true);
                 mousespeed = cfg.ReadSetting("mousespeed", 100);
                 movespeed = cfg.ReadSetting("movespeed", 500);
-                viewdistance = cfg.ReadSetting("viewdistance", 3000.0f);
+                viewdistance = cfg.ReadSetting("viewdistance", 6000.0f);
                 invertyaxis = cfg.ReadSetting("invertyaxis", false);
                 scriptfontname = cfg.ReadSetting("scriptfontname", "Lucida Console");
                 scriptfontsize = cfg.ReadSetting("scriptfontsize", 10);

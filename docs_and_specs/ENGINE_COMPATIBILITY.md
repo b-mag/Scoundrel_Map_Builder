@@ -19,7 +19,7 @@ Configs: `Build/Configurations/Doom64.cfg` + `Includes/D64_*.cfg`
 | `VERTEXES` | 8 bytes 16.16 | ✓ |
 | `SECTORS` | 24 bytes | ✓ |
 | `LIGHTS` | **6 bytes** RGBA + tag | ✓ (was 4-byte RGBA) |
-| `MACROS` | Blindcopy / BLAM | Parsed as opaque bytes — **not executed** |
+| `MACROS` | Blindcopy / BLAM | Subset interpreter (`Doom64Macros`; ref EX+ `p_macros.c`) |
 | `LEAFS` / nodes | Nodebuild | Ignored (raycast engine) |
 
 ## What works today
@@ -31,18 +31,18 @@ Configs: `Build/Configurations/Doom64.cfg` + `Includes/D64_*.cfg`
 
 ## Critical gaps (maps “open and play”)
 
-1. **MACROS / BLAM** — parsed as opaque bytes, not executed.
-2. **Some linedef specials** — use-doors, plats, teleports, exits MVP; scroll still todo.
-3. **Texture hashes** — expand names as maps need.
+1. **Texture hashes** — expand catalog names as maps need; WAD PNG lumps preferred when present.
+2. **Swing door styles** — Carcosa extras; stock D64 raise/split done.
+3. **LEAFS / BSP** — optional; raycast may skip.
 
 ## Round-trip
 
 ```
-Doom Builder 64 Enhanced  →  flat PWAD
+Doom Builder 64 Enhanced  →  flat PWAD (+ optional T_/S_ PNG lumps)
         ↓
-Doom64MapReader.read()    →  SectorWorld.fromDoom64() (+ bounds)
+Doom64MapReader.read() + Doom64WadGraphics.extract()
         ↓
-SectorGameWorld / SectorRenderer   [specials / things still incomplete]
+SectorGameWorld / SectorRenderer   [MACROS subset + specials MVP]
 ```
 
 Kotlin `SectorMapBuilder` → Editor: **not supported** (needs exporter later).
@@ -55,12 +55,19 @@ Kotlin `SectorMapBuilder` → Editor: **not supported** (needs exporter later).
 - [x] Sector AABB rebuild after load
 - [x] Load walkable room PWAD in-game (Select → **D64 Room**)
 - [x] Player start from thing type `1`
-- [x] Use-activated door (special 1/31 family) — rising ceiling + hide opened faces; anim styles later
-- [x] Texture hash → atlas (Carcosa stand-ins; expand name table as needed)
+- [x] Use-activated door (special 1/31 family) — rising ceiling + hide opened faces; split 117/118
+- [x] Texture hash → atlas (Carcosa stand-ins; WAD PNG first)
 - [x] 2S upper/lower/mid (multi-span); stock thin map in `d64_room_door.mapwad`
-- [x] Activation bits (use / walk / shoot) on action word
+- [x] Activation bits (use / walk / shoot) + key bits on action word
 - [x] Sky flats `F_SKY*` / `F_SKYA`–`K` → outdoors; floors reach the horizon on open columns
 - [x] Player radius 16 (stock D64) + min authored door width 48
-- [x] Full Builder hand-export regression (open `d64_room_door.mapwad` / showcase PWADs in Builder, re-save, reload) — 2026-09-12: `Doom64MapSetIO` + CARCOSA rewrite via `Builder.exe -SAVETHENEXIT`. Yhtill is `MAP02`, Demhe `MAP03`, Diadem `MAP04`.
-- [ ] MACROS interpreter (useful subset)
-- [ ] Scroll texture linedef specials
+- [x] Full Builder hand-export regression (open `d64_room_door.mapwad` / showcase PWADs in Builder, re-save, reload) — 2026-09-12
+- [x] MACROS interpreter (useful subset; ref Doom64EX-Plus `p_macros.c`)
+- [x] Scroll texture linedef / sector flags
+- [x] EX+ embedded PNG `T_*` / `S_*` (CastleDoom harness)
+- [x] Argument movers (floor/ceil/plat by/to `globalint`) + quake + artifact switches
+- [x] Cameras / light-copy linedef specials (200/201/243, 205–209/222/234–235)
+- [x] Sector/line property copy (218–223/230) + random line (240)
+- [x] Thing misc (202/231/233/242/93/94/211/254)
+
+**Self-contained custom WAD packaging:** EX+-style PNG lumps in `T_START`…`T_END` / `S_START`…`S_END`, plus optional `CARCOSA` / `CARCLUA`. Catalog PNGs remain a fallback for authoring.
